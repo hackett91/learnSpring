@@ -1,15 +1,17 @@
 package com.capcon.rest.webservices.orderingservice.Model.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponents;
-
+import javax.validation.Valid;
 import java.net.URI;
-import java.security.cert.CertPathBuilder;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class UserController {
@@ -23,21 +25,32 @@ public class UserController {
     public List<User> retrieveAllUsers() {
         return userDaoService.findAll();
     }
+
     // GET /users/{id}
     @GetMapping("/users/{id}")
-    public User retrieveUser(@PathVariable int id) {
+    public EntityModel<User> retrieveUser(@PathVariable int id) {
         User user = userDaoService.findOne(id);
 
         if (user==null) {
             throw new UserNotFoundException("id-"+ id);
         }
-        return user;
+
+        //"all-users", SERVER_PATH + "/users"
+        //retrieveAllUsers
+        EntityModel<User> resource = EntityModel.of(user);
+
+        WebMvcLinkBuilder linkTo =
+                linkTo(methodOn(this.getClass()).retrieveAllUsers());
+
+        resource.add(linkTo.withRel("all-users"));
+        //HATEOAS
+        return resource;
     }
     //CREATED
     // input - details of user
     // output - CREATED & REturn the created URI
     @PostMapping("/users")
-    public ResponseEntity<Object> createUser(@RequestBody User user) {
+    public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
         User savedUser = userDaoService.save(user);
         //CREATED status
         // /users/4
@@ -47,6 +60,14 @@ public class UserController {
                 .buildAndExpand(savedUser.getId()).toUri();
         // 201 response created status
         return ResponseEntity.created(location).build();
+    }
+
+    @DeleteMapping("/users/{id}")
+    public void  deleteUser(@PathVariable int id) {
+        User user = userDaoService.deleteById(id);
+        if (user==null) {
+            throw new UserNotFoundException("id-"+ id);
+        }
     }
 
 }
