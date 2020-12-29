@@ -1,5 +1,6 @@
 package com.capcon.rest.webservices.orderingservice.Model.User;
 
+import com.capcon.rest.webservices.orderingservice.Model.Post.Post;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -11,9 +12,9 @@ public class UserDaoService {
     private static List<User> users = new ArrayList<>();
     private static int usersCount = 3;
     static {
-        users.add(new User(1,"Adam", new Date()));
-        users.add(new User(2,"Eve", new Date()));
-        users.add(new User(3,"Jack", new Date()));
+        users.add(new User(1,"Adam", new Date(), new ArrayList<>()));
+        users.add(new User(2,"Eve", new Date(), new ArrayList<>()));
+        users.add(new User(3,"Jack", new Date(), new ArrayList<>()));
     }
 
     public  List<User> findAll() {
